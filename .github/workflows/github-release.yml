@@ -1,0 +1,34 @@
+name: GitHub Release
+
+on:
+  merge:
+    branches:
+      - master
+
+jobs:
+  release:
+    if: startsWith(github.head_ref, 'release/')
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract release version
+        id: version
+
+        run: |
+          BRANCH="${{ github.head_ref }}"
+          VERSION="${BRANCH#release/}"
+
+      - name: Create Tag
+
+        run: |
+          git tag ${{ steps.version.outputs.version }}
+          git push origin ${{ steps.version.outputs.version }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
