@@ -1,7 +1,7 @@
 name: GitHub Release
 
 on:
-  pull_request:
+  merge:
     branches:
       - master
 
@@ -21,7 +21,6 @@ jobs:
         run: |
           BRANCH="${{ github.head_ref }}"
           VERSION="${BRANCH#release/}"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Create Tag
 
