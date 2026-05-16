@@ -1,32 +1,40 @@
 name: GitHub Release
 
 on:
-  merge:
+  pull_request:
+    types: [closed]
     branches:
       - master
 
 jobs:
   release:
-    if: startsWith(github.head_ref, 'release/')
-
+    if: |
+      github.event.pull_request.merged == true &&
+      matches(github.event.pull_request.head.ref, '^release/[0-9]+\.[0-9]+\.[0-9]+$')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
 
       - name: Extract release version
         id: version
-
         run: |
-          BRANCH="${{ github.head_ref }}"
+          BRANCH="${{ github.event.pull_request.head.ref }}"
           VERSION="${BRANCH#release/}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Create Tag
-
         run: |
-          git tag ${{ steps.version.outputs.version }}
-          git push origin ${{ steps.version.outputs.version }}
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.version.outputs.version }}"
+          git push origin "${{ steps.version.outputs.version }}"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
