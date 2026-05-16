@@ -4,8 +4,7 @@ on:
   pull_request:
     types: [closed]
     branches:
-      # - master
-      - release-playground
+      - master
 
 jobs:
   release:
@@ -20,8 +19,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # ref: master
-          ref: release-playground
+          ref: master
           fetch-depth: 0
 
       - name: Extract release version
