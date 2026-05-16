@@ -1,32 +1,40 @@
 name: GitHub Release
 
 on:
-  merge:
+  pull_request:
+    types: [closed]
     branches:
-      - master
+      # - master
+      - release-playground
 
 jobs:
   release:
-    if: startsWith(github.head_ref, 'release/')
-
+    if: |
+      github.event.pull_request.merged == true &&
+      startsWith(github.head_ref, 'release/')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # ref: master
+          ref: release-playground
+          fetch-depth: 0
 
       - name: Extract release version
         id: version
-
         run: |
-          BRANCH="${{ github.head_ref }}"
+          BRANCH="${{ github.event.pull_request.head.ref }}"
           VERSION="${BRANCH#release/}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Create Tag
-
         run: |
-          git tag ${{ steps.version.outputs.version }}
-          git push origin ${{ steps.version.outputs.version }}
+          git tag "${{ steps.version.outputs.version }}"
+          git push origin "${{ steps.version.outputs.version }}"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
